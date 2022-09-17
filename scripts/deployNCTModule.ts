@@ -2,9 +2,16 @@ import { ethers } from 'hardhat';
 
 async function main() {
   const HUB = '0x7582177F9E536aB0b6c721e11f383C326F2Ad1D5';
-  const MODULEGLOBALS = '0xcbCC5b9611d22d11403373432642Df9Ef7Dd81AD';
+  const MODULE_GLOBALS = '0xcbCC5b9611d22d11403373432642Df9Ef7Dd81AD';
+  const OFFSET_HELPER = '0x30dC279166DCFB69F52C91d6A3380dCa75D0fCa7';
+  const POOL_TOKEN = '0x7beCBA11618Ca63Ead5605DE235f6dD3b25c530E';
   const NCTRetireCollectModule = await ethers.getContractFactory('NCTRetireCollectModule');
-  const NCTModule = await NCTRetireCollectModule.deploy(HUB, MODULEGLOBALS);
+  const NCTModule = await NCTRetireCollectModule.deploy(
+    HUB,
+    MODULE_GLOBALS,
+    OFFSET_HELPER,
+    POOL_TOKEN
+  );
 
   await NCTModule.deployed();
 
