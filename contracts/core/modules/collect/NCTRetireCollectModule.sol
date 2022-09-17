@@ -10,6 +10,7 @@ import {FollowValidationModuleBase} from '../FollowValidationModuleBase.sol';
 import {IERC20} from '@openzeppelin/contracts/token/ERC20/IERC20.sol';
 import {SafeERC20} from '@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol';
 import {IERC721} from '@openzeppelin/contracts/token/ERC721/IERC721.sol';
+import {IToucanOffsetHelper} from '../../../interfaces/IToucanOffsetHelper.sol';
 
 /**
  * @notice A struct containing the necessary data to execute collect actions on a publication.
@@ -43,7 +44,18 @@ contract NCTRetireCollectModule is FeeModuleBase, FollowValidationModuleBase, IC
     mapping(uint256 => mapping(uint256 => ProfilePublicationData))
         internal _dataByPublicationByProfile;
 
-    constructor(address hub, address moduleGlobals) FeeModuleBase(moduleGlobals) ModuleBase(hub) {}
+    address public immutable OFFSET_HELPER;
+    address public immutable POOL_TOKEN;
+
+    constructor(
+        address hub,
+        address moduleGlobals,
+        address offsetHelper,
+        address poolToken
+    ) FeeModuleBase(moduleGlobals) ModuleBase(hub) {
+        OFFSET_HELPER = offsetHelper;
+        POOL_TOKEN = poolToken;
+    }
 
     /**
      * @notice This collect module levies a fee on collects and supports referrals. Thus, we need to decode data.
@@ -125,6 +137,14 @@ contract NCTRetireCollectModule is FeeModuleBase, FollowValidationModuleBase, IC
         return _dataByPublicationByProfile[profileId][pubId];
     }
 
+    function _retireNCT(address currency, uint256 amountToOffset) internal {
+        IToucanOffsetHelper(OFFSET_HELPER).autoOffsetUsingToken(
+            currency,
+            POOL_TOKEN,
+            amountToOffset
+        );
+    }
+
     function _processCollect(
         address collector,
         uint256 profileId,
@@ -136,11 +156,10 @@ contract NCTRetireCollectModule is FeeModuleBase, FollowValidationModuleBase, IC
         _validateDataIsExpected(data, currency, amount);
 
         (address treasury, uint16 treasuryFee) = _treasuryData();
-        address recipient = _dataByPublicationByProfile[profileId][pubId].recipient;
         uint256 treasuryAmount = (amount * treasuryFee) / BPS_MAX;
         uint256 adjustedAmount = amount - treasuryAmount;
 
-        IERC20(currency).safeTransferFrom(collector, recipient, adjustedAmount);
+        _retireNCT(currency, adjustedAmount);
         if (treasuryAmount > 0)
             IERC20(currency).safeTransferFrom(collector, treasury, treasuryAmount);
     }
@@ -179,9 +198,7 @@ contract NCTRetireCollectModule is FeeModuleBase, FollowValidationModuleBase, IC
 
             IERC20(currency).safeTransferFrom(collector, referralRecipient, referralAmount);
         }
-        address recipient = _dataByPublicationByProfile[profileId][pubId].recipient;
-
-        IERC20(currency).safeTransferFrom(collector, recipient, adjustedAmount);
+        _retireNCT(currency, adjustedAmount);
         if (treasuryAmount > 0)
             IERC20(currency).safeTransferFrom(collector, treasury, treasuryAmount);
     }
