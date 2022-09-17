@@ -34,7 +34,7 @@ struct ProfilePublicationData {
  * @author Lens Protocol & ToucanFrens
  *
  * @notice This is a simple Lens CollectModule implementation, inheriting from the ICollectModule interface and
- * the FeeCollectModuleBase abstract contract. It was developed further to retire carbon credits (NCTs) direcly
+ * the FeeCollectModuleBase abstract contract. It was developed further by ToucanFrens to retire carbon credits (NCTs) direcly
  *
  * This module works by allowing unlimited collects for a publication at a given price.
  */
@@ -43,12 +43,21 @@ contract NCTRetireCollectModule is FeeModuleBase, FollowValidationModuleBase, IC
 
     //Constants
     address public immutable NATURE_CARBON_TONNE;
+    address public immutable TOUCAN_OFFSET_HELPER;
 
+    //Mapping
     mapping(uint256 => mapping(uint256 => ProfilePublicationData))
         internal _dataByPublicationByProfile;
 
-    constructor(address hub, address moduleGlobals, address natureCarbonTonne) FeeModuleBase(moduleGlobals) ModuleBase(hub) {
-        NATURE_CARBON_TONNE = natureCarbonTonne;
+    //Events
+    event LogNCTretired(address indexed collector, uint256 indexed profileId, uint256 indexed pubId, uint amount);
+
+    //Constructor
+    constructor(address hub, address moduleGlobals, 
+                address natureCarbonTonne, address toucanOffsetHelper) 
+        FeeModuleBase(moduleGlobals) ModuleBase(hub) {
+            NATURE_CARBON_TONNE = natureCarbonTonne;
+            TOUCAN_OFFSET_HELPER = toucanOffsetHelper;
     }
 
     /**
@@ -131,7 +140,24 @@ contract NCTRetireCollectModule is FeeModuleBase, FollowValidationModuleBase, IC
         return _dataByPublicationByProfile[profileId][pubId];
     }
 
+    function _retireNCT(collector, profileId, pubId, currency, adjustedAmount) internal {
+        IToucanOffsetHelper(TOUCAN_OFFSET_HELPER).autoOffsetUsingToken(
+            currency,
+            NATURE_CARBON_TONNE,
+            adjustedAmount
+        );
+        emit LogNCTretired(collector, profileId, pubId, adjustedAmount);
+    }
 
+    function _retireNCTwithNCT(collector, profileId, pubId, adjustedAmount) internal {
+        IToucanOffsetHelper(TOUCAN_OFFSET_HELPER).autoOffsetUsingToken(
+            currency,
+            NATURE_CARBON_TONNE,
+            adjustedAmount
+        );
+        //NCT was already the currency that is retired
+        emit LogNCTretired(collector, profileId, pubId, adjustedAmount);
+    }
 
     function _processCollect(
         address collector,
@@ -139,19 +165,24 @@ contract NCTRetireCollectModule is FeeModuleBase, FollowValidationModuleBase, IC
         uint256 pubId,
         bytes calldata data
     ) internal {
+        uint256 amount = _dataByPublicationByProfile[profileId][pubId].amount;
         address currency = _dataByPublicationByProfile[profileId][pubId].currency;
-        if(currency == )
-        uint256 amount = _dataByPublicationByProfile[profileId][pubId].amount;        
         _validateDataIsExpected(data, currency, amount);
 
         (address treasury, uint16 treasuryFee) = _treasuryData();
-        address recipient = _dataByPublicationByProfile[profileId][pubId].recipient;
+        //address recipient = _dataByPublicationByProfile[profileId][pubId].recipient;
         uint256 treasuryAmount = (amount * treasuryFee) / BPS_MAX;
         uint256 adjustedAmount = amount - treasuryAmount;
 
         //Retire NCT
-        _retireNCT(collector, recipient, pubId, currency, adjustedAmount);
-
+        //IERC20(currency).safeTransferFrom(collector, recipient, adjustedAmount);
+        if(currency == NATURE_CARBON_TONNE){
+            _retireNCTwithNCT(collector, profileId, pubId, adjustedAmount);
+        }
+        else{
+            _retireNCT(collector, profileId, pubId, currency, adjustedAmount);
+        }
+        
         if (treasuryAmount > 0)
             IERC20(currency).safeTransferFrom(collector, treasury, treasuryAmount);
     }
