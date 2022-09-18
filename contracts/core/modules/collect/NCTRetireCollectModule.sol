@@ -30,7 +30,7 @@ struct ProfilePublicationData {
 }
 
 /**
- * @title FeeCollectModule
+ * @title NTCRetireCollectModule
  * @author Lens Protocol & ToucanFrens
  *
  * @notice This is a simple Lens CollectModule implementation, inheriting from the ICollectModule interface and
@@ -50,14 +50,22 @@ contract NCTRetireCollectModule is FeeModuleBase, FollowValidationModuleBase, IC
         internal _dataByPublicationByProfile;
 
     //Events
-    event LogNCTretired(address indexed collector, uint256 indexed profileId, uint256 indexed pubId, uint amount);
+    event LogNCTretired(
+        address indexed collector,
+        uint256 indexed profileId,
+        uint256 indexed pubId,
+        uint256 amount
+    );
 
     //Constructor
-    constructor(address hub, address moduleGlobals, 
-                address natureCarbonTonne, address toucanOffsetHelper) 
-        FeeModuleBase(moduleGlobals) ModuleBase(hub) {
-            NATURE_CARBON_TONNE = natureCarbonTonne;
-            TOUCAN_OFFSET_HELPER = toucanOffsetHelper;
+    constructor(
+        address hub,
+        address moduleGlobals,
+        address natureCarbonTonne,
+        address toucanOffsetHelper
+    ) FeeModuleBase(moduleGlobals) ModuleBase(hub) {
+        NATURE_CARBON_TONNE = natureCarbonTonne;
+        TOUCAN_OFFSET_HELPER = toucanOffsetHelper;
     }
 
     /**
@@ -140,16 +148,31 @@ contract NCTRetireCollectModule is FeeModuleBase, FollowValidationModuleBase, IC
         return _dataByPublicationByProfile[profileId][pubId];
     }
 
-    function _retireNCT(address collector, uint256 profileId, uint256 pubId, address currency, uint256 adjustedAmount) internal {
-        
-        //Calculate how much ERC20 token ("currency") is required 
+    /**
+     * @notice Retires automatically NCT tokens
+     *
+     * @param collector Public address of user who is collection.
+     * @param profileId The token ID of the profile mapped to the publication to query.
+     * @param pubId The publication ID of the publication to query.
+     * @param currency The currency address, must be internally whitelisted.
+     * @param adjustedAmount The adjusted amount of the ERC20 which will be swapped to buy and retire NCT.
+     *
+     */
+    function _retireNCT(
+        address collector,
+        uint256 profileId,
+        uint256 pubId,
+        address currency,
+        uint256 adjustedAmount
+    ) internal {
+        //Calculate how much ERC20 token ("currency") is required
         //in order to swap for the desired amount of a NCT
         uint256 amountOfNCT = IToucanOffsetHelper(TOUCAN_OFFSET_HELPER).calculateNeededTokenAmount(
-            NATURE_CARBON_TONNE, 
-            currency, 
+            NATURE_CARBON_TONNE,
+            currency,
             adjustedAmount
         );
-        
+
         IToucanOffsetHelper(TOUCAN_OFFSET_HELPER).autoOffsetUsingToken(
             currency,
             NATURE_CARBON_TONNE,
@@ -159,8 +182,12 @@ contract NCTRetireCollectModule is FeeModuleBase, FollowValidationModuleBase, IC
         emit LogNCTretired(collector, profileId, pubId, amountOfNCT);
     }
 
-    function _retireNCTwithNCT(address collector, uint256 profileId, uint256 pubId, uint256 adjustedAmount) internal {
-        
+    function _retireNCTwithNCT(
+        address collector,
+        uint256 profileId,
+        uint256 pubId,
+        uint256 adjustedAmount
+    ) internal {
         IToucanOffsetHelper(TOUCAN_OFFSET_HELPER).autoOffsetUsingPoolToken(
             NATURE_CARBON_TONNE,
             adjustedAmount
@@ -181,18 +208,16 @@ contract NCTRetireCollectModule is FeeModuleBase, FollowValidationModuleBase, IC
         _validateDataIsExpected(data, currency, amount);
 
         (address treasury, uint16 treasuryFee) = _treasuryData();
-        //address recipient = _dataByPublicationByProfile[profileId][pubId].recipient;
         uint256 treasuryAmount = (amount * treasuryFee) / BPS_MAX;
         uint256 adjustedAmount = amount - treasuryAmount;
 
         //Retire NCT
-        if(currency == NATURE_CARBON_TONNE){
+        if (currency == NATURE_CARBON_TONNE) {
             _retireNCTwithNCT(collector, profileId, pubId, adjustedAmount);
-        }
-        else{
+        } else {
             _retireNCT(collector, profileId, pubId, currency, adjustedAmount);
         }
-        
+
         if (treasuryAmount > 0)
             IERC20(currency).safeTransferFrom(collector, treasury, treasuryAmount);
     }
@@ -231,16 +256,14 @@ contract NCTRetireCollectModule is FeeModuleBase, FollowValidationModuleBase, IC
 
             IERC20(currency).safeTransferFrom(collector, referralRecipient, referralAmount);
         }
-        //address recipient = _dataByPublicationByProfile[profileId][pubId].recipient;
 
         //Retire NCT
-        if(currency == NATURE_CARBON_TONNE){
+        if (currency == NATURE_CARBON_TONNE) {
             _retireNCTwithNCT(collector, profileId, pubId, adjustedAmount);
-        }
-        else{
+        } else {
             _retireNCT(collector, profileId, pubId, currency, adjustedAmount);
         }
-        
+
         if (treasuryAmount > 0)
             IERC20(currency).safeTransferFrom(collector, treasury, treasuryAmount);
     }
