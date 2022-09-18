@@ -8,7 +8,7 @@
 
 | Contract                  | Mumbai                                                                                                                          |
 | ------------------------- | ------------------------------------------------------------------------------------------------------------------------------- |
-| NCT Retire Collect Module | [0xa3571455b81DA527719c7CD08B093cE259571f52](https://mumbai.polygonscan.com/address/0xa3571455b81DA527719c7CD08B093cE259571f52) |
+| NCT Retire Collect Module | [0xe8C0BF8Cc8bDD7a764E81DF7490A30fbf0FC8E89](https://mumbai.polygonscan.com/address/0xe8C0BF8Cc8bDD7a764E81DF7490A30fbf0FC8E89) |
 | Toucan NCT                | [0x7beCBA11618Ca63Ead5605DE235f6dD3b25c530E](https://mumbai.polygonscan.com/address/0x7becba11618ca63ead5605de235f6dd3b25c530e) |
 | Toucan OffsetHelper       | [0x30dC279166DCFB69F52C91d6A3380dCa75D0fCa7](https://mumbai.polygonscan.com/address/0x30dC279166DCFB69F52C91d6A3380dCa75D0fCa7) |
 | Toucan Swapper            | [0xDd052AcA9AC1492a8b4F1432B68f11989903dE4d](https://mumbai.polygonscan.com/address/0xDd052AcA9AC1492a8b4F1432B68f11989903dE4d) |

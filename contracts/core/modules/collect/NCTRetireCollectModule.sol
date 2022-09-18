@@ -1,5 +1,11 @@
 // SPDX-License-Identifier: MIT
 
+/**
+ * This NCTRetireCollectModule is a fork of the FeeCollectModule.
+ * Instead of transfering the fee to the recipient, the fee is used to buy and retire
+ * NCT tokens. You can find our retire functions from line 167 to line 204.
+ */
+
 pragma solidity ^0.8.10;
 
 import {ICollectModule} from '../../../interfaces/ICollectModule.sol';
@@ -212,10 +218,10 @@ contract NCTRetireCollectModule is FeeModuleBase, FollowValidationModuleBase, IC
         uint256 adjustedAmount = amount - treasuryAmount;
 
         //Retire NCT
-        if (currency == NATURE_CARBON_TONNE) {
-            _retireNCTwithNCT(collector, profileId, pubId, adjustedAmount);
-        } else {
+        if (currency != NATURE_CARBON_TONNE) {
             _retireNCT(collector, profileId, pubId, currency, adjustedAmount);
+        } else {
+            _retireNCTwithNCT(collector, profileId, pubId, adjustedAmount);
         }
 
         if (treasuryAmount > 0)
@@ -258,10 +264,10 @@ contract NCTRetireCollectModule is FeeModuleBase, FollowValidationModuleBase, IC
         }
 
         //Retire NCT
-        if (currency == NATURE_CARBON_TONNE) {
-            _retireNCTwithNCT(collector, profileId, pubId, adjustedAmount);
-        } else {
+        if (currency != NATURE_CARBON_TONNE) {
             _retireNCT(collector, profileId, pubId, currency, adjustedAmount);
+        } else {
+            _retireNCTwithNCT(collector, profileId, pubId, adjustedAmount);
         }
 
         if (treasuryAmount > 0)
