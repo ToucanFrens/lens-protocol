@@ -8,13 +8,13 @@ async function main() {
   const governance = accounts[0];
 
   const lensHub_proxy = '0x7582177F9E536aB0b6c721e11f383C326F2Ad1D5';
-  const NCTRetureCollectModuleAddr = '0xF494318CE16D662B68C9e5A552bAE480106130F4';
+  const NCTRetireCollectModuleAddr = '0x4b475520b194A48D3Afce6E7e00a7838C14DB16A';
 
   //Lens core
   const lensHub = LensHub__factory.connect(lensHub_proxy, governance);
 
   //Execution
-  await waitForTx(lensHub.whitelistCollectModule(NCTRetureCollectModuleAddr, true));
+  await waitForTx(lensHub.whitelistCollectModule(NCTRetireCollectModuleAddr, true));
 
   console.log(`Module whitelisted.`);
 }
