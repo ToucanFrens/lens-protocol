@@ -10,7 +10,7 @@ task('postTestnet', 'publishes a post').setAction(async ({}, hre) => {
   const user = new hre.ethers.Wallet(String(process.env.USER_PRIVATE_KEY), provider);
 
   const lensHub_proxy = '0x7582177F9E536aB0b6c721e11f383C326F2Ad1D5';
-  const NCTRetireCollectModuleAddr = '0x4b475520b194A48D3Afce6E7e00a7838C14DB16A';
+  const NCTRetireCollectModuleAddr = '0xe8C0BF8Cc8bDD7a764E81DF7490A30fbf0FC8E89';
   const NTCAddress = '0x7beCBA11618Ca63Ead5605DE235f6dD3b25c530E';
   const lensHub = LensHub__factory.connect(lensHub_proxy, user);
   console.log('1');

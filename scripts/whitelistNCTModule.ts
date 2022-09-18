@@ -8,7 +8,7 @@ async function main() {
   const governance = accounts[0];
 
   const lensHub_proxy = '0x7582177F9E536aB0b6c721e11f383C326F2Ad1D5';
-  const NCTRetireCollectModuleAddr = '0x4b475520b194A48D3Afce6E7e00a7838C14DB16A';
+  const NCTRetireCollectModuleAddr = '0xe8C0BF8Cc8bDD7a764E81DF7490A30fbf0FC8E89';
 
   //Lens core
   const lensHub = LensHub__factory.connect(lensHub_proxy, governance);

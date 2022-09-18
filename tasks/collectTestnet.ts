@@ -12,7 +12,7 @@ task('collectTestnet', 'collects a post').setAction(async ({}, hre) => {
   const lensHub = LensHub__factory.connect(lensHub_proxy, collector);
 
   const profileId = await lensHub.getProfileIdByHandle('annitho.test');
-  const numPost = 14;
+  const numPost = 1;
   console.log(`ProfileId by handle: ${profileId}`);
   const tx = await lensHub.collect(profileId, ethers.BigNumber.from(numPost), [], {
     gasLimit: 1000 * 10000,
